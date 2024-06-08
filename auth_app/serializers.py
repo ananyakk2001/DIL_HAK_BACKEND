@@ -64,10 +64,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source='profile.first_name')
-    last_name = serializers.CharField(source='profile.last_name')
-    gender = serializers.CharField(source='profile.gender')
-    address = serializers.CharField(source='profile.address')
+    first_name = serializers.CharField(source='profile.first_name', required=False)
+    last_name = serializers.CharField(source='profile.last_name', required=False)
+    gender = serializers.CharField(source='profile.gender', required=False)
+    address = serializers.CharField(source='profile.address', required=False)
     image = serializers.ImageField(source='profile.image', required=False)
 
     class Meta:
@@ -89,6 +89,35 @@ class AdminSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(is_active=True, **validated_data)
         UserProfile.objects.create(user=user, **profile_data)
         return user
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If this is an update operation, set all fields to not required
+        if self.instance:
+            for field_name, field in self.fields.items():
+                # Keep the fields that were originally required still required during creation
+                if field_name in ['username', 'password', 'email', 'phone_number', 'first_name', 'image']:
+                    continue
+                field.required = False
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+
+        # Update User instance fields
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.save()
+
+        # Update UserProfile instance fields
+        profile = instance.profile
+        profile.first_name = profile_data.get('first_name', profile.first_name)
+        profile.image = profile_data.get('image', profile.image)
+        profile.save()
+
+        return instance
     
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -88,8 +88,8 @@ class UserProfile(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    first_name = models.CharField(max_length=50, null=False, blank=False)
-    last_name = models.CharField(max_length=50, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
     image = models.ImageField(upload_to='user_proflie', null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
     address = models.CharField(max_length=300, null=True, blank=True)
