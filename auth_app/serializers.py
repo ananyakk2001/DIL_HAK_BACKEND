@@ -64,16 +64,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source='profile.first_name', required=False)
-    last_name = serializers.CharField(source='profile.last_name', required=False)
-    gender = serializers.CharField(source='profile.gender', required=False)
-    address = serializers.CharField(source='profile.address', required=False)
-    image = serializers.ImageField(source='profile.image', required=False)
+    # GENDER = (('Male','Male'),('Female','Female'),('Others','Others'))
+    first_name = serializers.CharField(source='profile.first_name',required=False)
+    last_name = serializers.CharField(source='profile.last_name',required=False)
+    gender = serializers.CharField(source='profile.gender',required=False)
+    address = serializers.CharField(source='profile.address',required=False)
+    image = serializers.ImageField(source='profile.image',required=False)
 
     class Meta:
         model = User
         fields = ("id", "username", "password", "is_product_admin", "is_order_admin", "is_sales_admin", "email", "phone_number", "first_name", "last_name", "gender", "address","image")
-        # extra_kwargs = {'password': {'write_only': True}}
+        # extra_kwargs = {'password': {'write_only': False}}
 
     # def create(self, validated_data):
     #     profile_data = validated_data.pop('profile')
@@ -119,13 +120,20 @@ class AdminSerializer(serializers.ModelSerializer):
 
         return instance
     
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
 class SubCategorySerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name', read_only=True)
+    category = CategorySerializer()
     class Meta:
+        
         model = SubCategory
-        fields = '__all__'    
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['category'] = instance.category.name
+        return rep
