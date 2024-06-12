@@ -127,13 +127,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SubCategorySerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
+    # category = serializers.CharField(source='category.name', read_only= True)
     class Meta:
-        
         model = SubCategory
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep['category'] = instance.category.name
-        return rep
+        fields = ['id', 'name', 'image', 'category']
